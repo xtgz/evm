@@ -7,39 +7,50 @@ https://nodejs.org/en/download/
 
 Install yarn
 First enter the root directory and then execute
-
+```
 npm install -g yarn
 yarn install
+```
 Configure environment variables
 Modify the .env file and fill in all information
 
 Generate mnemonic words
+```
 node genMnemonic.js
+```
 The generated mnemonic words will be saved in the mnemonic.json file
 
 Print addresses in batches based on mnemonic phrases
+```
 node printAddressByMnemonic.js
+```
 Print private keys in batches based on mnemonic phrases
+```
 node printPrivateKeyByMnemonic.js
+```
 Wallet batch generation
 The mnemonic phrase based on which the wallet is generated in batches is configured in the .env file. If you want to use the code-generated mnemonic phrase, please find it in the mnemonic.json file and configure it in the .env file.
-
+```
 node genWallet.js
+```
 The generated information will be saved in the evm_wallets.json file
 
 Batch transfer
 Transfer money to all addresses in the evm_wallets.json file. If you don’t want to use the generated address, just change the format to the address you want to transfer. Just change the address in the evm_wallets.json file.
-
+```
 node transfer.js
+```
 Batch mint
 Use all addresses in evm_wallets.json to mint. You can add and modify them according to the format. The address and privateKey in the file must be configured correctly.
-
+```typescript
 node mint.js
+```
 Quick batch mint
 Without actual testing, it is not recommended to use it easily. It is easy to burn gas quickly and the success of mint is not guaranteed.
 
 It does not wait for the transaction results, does not request gas every time, and directly sends the mint request to accumulate nonce. Because the request is too fast and can easily be blocked by the node, causing the script to stop running, it is recommended to build a self-built full node and use this script.
 
 Use all addresses in evm_wallets.json to mint. You can add and modify them according to the format. The address and privateKey in the file must be configured correctly.
-
+```typescript
 node fastMint.js
+```
