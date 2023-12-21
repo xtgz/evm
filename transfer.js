@@ -1,55 +1,55 @@
 require('dotenv').config();
 const {readFileSync} = require('fs');
 const {Web3} = require('web3');
-const axes = require('axes');
+const axios = require('axios');
 
 const nodeUrl = process.env.NODE_URL;
 const chainId = process.env.CHAIN_ID;
 
-//Create Web3 instance
+// 创建Web3实例
 const web3 = new Web3(nodeUrl);
 
-//Send the address and private key of gas coins
+// 发送gas币的地址和私钥
 const fromAddress = process.env.ADDRESS;
 const privateKey = process.env.PRIVATE_KEY;
 
-// Get wallet information from json file
+// 从json文件获取钱包信息
 const wallets = JSON.parse(readFileSync('evm_wallets.json', 'utf-8'));
 
-// Target address list
+// 目标地址列表
 const toAddresses = wallets.map(wallet => wallet.address);
 
-//Transfer amount (in wei)
+// 转账金额（以wei为单位）
 const amountInWei = web3.utils.toWei(process.env.MONEY, 'ether');
 
-//Construct transaction object
+// 构建交易对象
 const buildTransaction = async (to) => {
     try {
-        // Get real-time Gas price
+        // 获取实时Gas价格
         const gasPriceInWei = await getGasPrice();
         const nonce = await web3.eth.getTransactionCount(fromAddress);
 
-        // Estimate gas limit
+        // 估算gas限制
         const gasLimit = await web3.eth.estimateGas({
             from: fromAddress,
-            to: to
+            to: to,
             value: amountInWei,
         });
 
         return {
             from: fromAddress,
-            to: to
+            to: to,
             value: amountInWei,
             gasPrice: gasPriceInWei,
             gas: gasLimit,
             nonce: nonce,
         };
     } catch (error) {
-        throw new Error(`Building transaction failed: ${error.message}`);
+        throw new Error(`构建交易失败: ${error.message}`);
     }
 };
 
-// Get real-time Gas price
+// 获取实时Gas价格
 const getGasPrice = async () => {
     try {
         const response = await axios.post(nodeUrl, {
@@ -61,32 +61,32 @@ const getGasPrice = async () => {
 
         return response.data.result;
     } catch (error) {
-        throw new Error(`Failed to obtain Gas price: ${error.message}`);
+        throw new Error(`获取Gas价格失败: ${error.message}`);
     }
 };
 
-//Send transaction
+// 发送交易
 const sendTransaction = async (transaction) => {
     try {
         const signedTransaction = await web3.eth.accounts.signTransaction(transaction, privateKey);
         return web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
     } catch (error) {
-        throw new Error(`Failed to send transaction: ${error.message}`);
+        throw new Error(`发送交易失败: ${error.message}`);
     }
 };
 
-//Send transactions in batches
+// 批量发送交易
 const batchSendTransactions = async () => {
     for (const toAddress of toAddresses) {
         const transaction = await buildTransaction(toAddress);
         try {
             const receipt = await sendTransaction(transaction);
-            console.log(`Transaction sent to ${toAddress}. Transaction Hash: ${receipt.transactionHash}`);
+            console.log(`交易已发送至 ${toAddress}. 交易哈希: ${receipt.transactionHash}`);
         } catch (error) {
-            console.error(`Sending transaction to ${toAddress} failed: ${error.message}`);
+            console.error(`发送交易至 ${toAddress} 失败: ${error.message}`);
         }
     }
 };
 
-//Execute batch sending
+// 执行批量发送
 batchSendTransactions();
